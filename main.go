@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
@@ -77,19 +75,14 @@ func main() {
 
 	// client.Statuses.Retweet(tweets[0].ID, nil)
 
-	//this is me testing out the streaming functionality
-	params := &twitter.StreamUserParams{
-		With:          "followings",
-		StallWarnings: twitter.Bool(true),
+	//This shows 15 tweets suing the givin query
+	search, _, err := client.Search.Tweets(&twitter.SearchTweetParams{
+		Query:     "Iowa State",
+		TweetMode: "extended",
+	})
+
+	for index, tweet := range search.Statuses {
+		fmt.Printf("Tweet: %v \n User: %v \n Tweet: %v \n", index, tweet.User.Name, tweet.FullText)
 	}
-	stream, err := client.Streams.User(params)
 
-	demux := twitter.NewSwitchDemux()
-	go demux.HandleChan(stream.Messages)
-
-	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	log.Println(<-ch)
-
-	stream.Stop()
 }
